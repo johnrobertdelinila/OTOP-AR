@@ -49,7 +49,7 @@ namespace UI.PlayerWindow.Functionality
 //                 m_VideoController.LoadVideo(filePath);
 //             }
 // #endif
-            SceneManager.LoadScene("HomeScreen");
+            SceneManager.LoadScene("HomeScreen 1");
         }
     }
 }
