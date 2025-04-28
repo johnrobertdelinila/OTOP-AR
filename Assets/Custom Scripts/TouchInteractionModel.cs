@@ -8,6 +8,7 @@ public class TouchInteractionModel : MonoBehaviour
     private const float TAP_THRESHOLD = 0.2f;
     private const float MIN_SCALE = 0.01f;
     private const float MAX_SCALE = 10f;
+    private const float DOUBLE_TAP_TIME_THRESHOLD = 0.3f;  // Time window for double tap
 
     private float touchStartTime;
     private Vector2 touchStartPosition;
@@ -18,6 +19,8 @@ public class TouchInteractionModel : MonoBehaviour
     private Vector3 initialScale;
     private float currentScale = 1f;
     private Transform arAnchor;
+    private float lastTapTime;
+    private ImageTracking imageTrackingManager;
 
     void Start()
     {
@@ -31,6 +34,13 @@ public class TouchInteractionModel : MonoBehaviour
         anchor.transform.rotation = transform.rotation;
         arAnchor = anchor.transform;
         transform.parent = arAnchor;
+        
+        // Find the ImageTracking component in the scene
+        imageTrackingManager = FindObjectOfType<ImageTracking>();
+        if (imageTrackingManager == null)
+        {
+            Debug.LogError("[AR_INTERACTION] ImageTracking component not found in scene!");
+        }
     }
 
     void HandleRotation(Touch touch)
@@ -80,6 +90,15 @@ public class TouchInteractionModel : MonoBehaviour
         }
     }
 
+    void HandleDoubleTap()
+    {
+        if (imageTrackingManager != null)
+        {
+            imageTrackingManager.OnShowPanelButtonClicked();
+            Debug.Log("[AR_INTERACTION] Double tap detected - showing info panel");
+        }
+    }
+
     void Update()
     {
         if (Input.touchCount == 0)
@@ -121,6 +140,14 @@ public class TouchInteractionModel : MonoBehaviour
             case TouchPhase.Ended:
                 if (!isDragging && Time.time - touchStartTime < TAP_THRESHOLD)
                 {
+                    // Check for double tap
+                    float timeSinceLastTap = Time.time - lastTapTime;
+                    if (timeSinceLastTap <= DOUBLE_TAP_TIME_THRESHOLD)
+                    {
+                        // Double tap detected
+                        HandleDoubleTap();
+                    }
+                    lastTapTime = Time.time;
                     Debug.Log("[AR_INTERACTION] Tap detected");
                 }
                 targetRotation = transform.rotation;
